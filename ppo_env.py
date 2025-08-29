@@ -39,9 +39,9 @@ class LeaderFollowerEnv(gym.Env):
         )
 
         # --- Add Jetbot (Follower) ---
-        jb_path = assets_root_path + "/Isaac/Robots/Crazyflie/crazyflie.usd"
-        add_reference_to_stage(usd_path=jb_path, prim_path="/World/Crazyflie")
-        self.jetbot = Articulation(prim_paths_expr="/World/Crazyflie", name="my_jetbot")
+        jb_path = assets_root_path + "/Isaac/Robots/Jetbot/jetbot.usd"
+        add_reference_to_stage(usd_path=jb_path, prim_path="/World/Jetbot")
+        self.jetbot = Articulation(prim_paths_expr="/World/Jetbot", name="my_jetbot")
 
         # --- Add Carter (Leader) ---
         car_path = assets_root_path + "/Isaac/Robots/NVIDIA/Carter/nova_carter/nova_carter.usd"

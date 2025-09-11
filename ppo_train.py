@@ -17,6 +17,8 @@ gym.register(
 
 
 env = gym.make('LeaderFollower-v0')
+env.red_area_rect = (1.0, 2.0, -1.0, 2.0)
+env.occlusion_mode = "leader_inside"
 
 
 model = PPO(
@@ -39,7 +41,7 @@ print("Starting training...")
 model.learn(total_timesteps=100_000)
 
 
-model_save_path = "C:\isaacsim\standalone_examples\custom_env\leader_follower_ppo_model_v1"
+model_save_path = "C:\isaacsim\standalone_examples\custom_env\leader_follower_ppo_model_pf_nooccl"
 model.save(model_save_path)
 print(f"Model saved to {model_save_path}")
 

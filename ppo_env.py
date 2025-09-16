@@ -80,7 +80,7 @@ class LeaderFollowerEnv(gym.Env):
         # ----- Blue visual area (non-physical) -----
         # Visual (non-physical) marked area
         # ----- Visual occlusion area -----
-        self.red_area_rect = (-1.0, 2.5, -2.0, 3.5)
+        self.red_area_rect = (1.0, 2.0, -1.0, 2.0)
         self._ensure_colored_area(rect=self.red_area_rect, color=(1.0, 0.0, 0.0), opacity=0.35)
         self._ensure_bright_lighting()
 
@@ -93,7 +93,7 @@ class LeaderFollowerEnv(gym.Env):
         self._pf = ParticleFilter2D(
             N=600,
             proc_pos_std=0.06,
-            proc_vel_std=0.25,
+            proc_vel_std=0.5,
             meas_std=0.05,
             resample_frac=0.5,
         )
@@ -411,11 +411,13 @@ class LeaderFollowerEnv(gym.Env):
         rel_xy = leader_xy - follower_xy
         gt_distance = float(np.linalg.norm(rel_xy))
         # === Occlusion check ===
+        was_visible = getattr(self, "visible", False)  # Get previous state, default False if first call
         self.visible = not self._is_occluded(leader_xy, follower_xy)
+        just_reappeared = self.visible and not was_visible  # Target just became visible again
 
         # === Always update the particle filter ===
         self._pf.predict(dt)
-        self._pf.update(None if not self.visible else rel_xy)
+        self._pf.update(None if not self.visible else rel_xy, was_occluded=just_reappeared)
         mean, pf_cov, pf_neff = self._pf.estimate()
         rel_est = mean[:2]
         d_est = float(np.linalg.norm(rel_est))

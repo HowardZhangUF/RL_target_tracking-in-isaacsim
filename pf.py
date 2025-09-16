@@ -4,7 +4,7 @@ import numpy as np
 class ParticleFilter2D:
     """Constant-velocity PF over relative state [x, y, vx, vy]."""
 
-    def __init__(self, N=600, proc_pos_std=0.06, proc_vel_std=0.25, meas_std=0.05, resample_frac=0.5, rng=None):
+    def __init__(self, N=600, proc_pos_std=0.06, proc_vel_std=0.5, meas_std=0.05, resample_frac=0.5, rng=None):
         self.N = int(N)
         self.proc_pos_std = float(proc_pos_std)  # m per sqrt(s)
         self.proc_vel_std = float(proc_vel_std)  # m/s per sqrt(s)
@@ -33,14 +33,36 @@ class ParticleFilter2D:
         self.p[:, 2] += self.rng.normal(0, self.proc_vel_std * sdt, size=self.N)
         self.p[:, 3] += self.rng.normal(0, self.proc_vel_std * sdt, size=self.N)
 
-    def update(self, z_xy):
-        """z_xy: np.array([dx, dy]) or None when occluded."""
+    def update(self, z_xy, was_occluded=False):
+        """z_xy: np.array([dx, dy]) or None when occluded.
+        was_occluded: True if previous observation was None (optional)"""
         if z_xy is None:
             return  # no measurement → keep weights
+        
         z = np.asarray(z_xy, dtype=np.float32)
         diff = self.p[:, :2] - z[None, :]
+        sq_dist = np.sum(diff * diff, axis=1)
+        
+        # Check if observation is far from ALL particles
+        min_sq_dist = np.min(sq_dist)
+        
+        # If target reappeared far from all particles, partially reinitialize
+        if was_occluded and min_sq_dist > 1.0:  # Threshold distance in squared meters
+            # Reinitialize some percentage of particles around new observation
+            reinit_frac = 0.5  # 50% of particles
+            n_reinit = int(self.N * reinit_frac)
+            
+            # Choose particles with lowest weights to replace
+            indices = np.argsort(self.w)[:n_reinit]
+            
+            # Reset their positions and velocities
+            self.p[indices, 0] = z[0] + self.rng.normal(0, 0.05, size=n_reinit)
+            self.p[indices, 1] = z[1] + self.rng.normal(0, 0.05, size=n_reinit)
+            self.p[indices, 2:4] = self.rng.normal(0, 0.2, size=(n_reinit, 2))
+        
+        # Continue with regular update...
         inv_2s2 = 1.0 / (2.0 * self.meas_std * self.meas_std + 1e-12)
-        ll = np.exp(-np.sum(diff * diff, axis=1) * inv_2s2).astype(np.float64)
+        ll = np.exp(-sq_dist * inv_2s2).astype(np.float64)
         self.w = (self.w * ll)
         sw = float(self.w.sum())
         if sw <= 0 or not np.isfinite(sw):

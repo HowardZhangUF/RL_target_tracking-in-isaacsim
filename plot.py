@@ -268,15 +268,15 @@ def plot_pf_cov(csv_path, stem=None):
 
 
 if __name__ == "__main__":
-    csv = r"C:\isaacsim\standalone_examples\custom_env\pf_switch_test_log_.csv"
-    plot_pf_csv(r"C:\isaacsim\standalone_examples\custom_env\pf_switch_test_log_.csv")
+    csv = r"C:\isaacsim\standalone_examples\custom_env\pf_switch_log.csv"
+    plot_pf_csv(r"C:\isaacsim\standalone_examples\custom_env\pf_switch_log.csv")
     animate_traj_from_csv(
         csv,
-        red_rect=(-1.0, 2.5, -2.0, 3.5),
+        red_rect=(1.0, 2.0, -1.0, 2.0),
         fps=30,
         fmt="gif",
         step_stride=1,
-        particles_npz=r"C:\isaacsim\standalone_examples\custom_env\pf_switch_test_particles.npz",   # << include particles
+        particles_npz=r"C:\isaacsim\standalone_examples\custom_env\pf_switch_particles.npz",   # << include particles
         particle_size=8,
         particle_alpha=0.35
     )

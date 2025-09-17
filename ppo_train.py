@@ -22,7 +22,7 @@ env.occlusion_mode = "leader_inside"
 
 
 model = PPO(
-    "MlpPolicy",
+    "CnnPolicy",
     env,
     verbose=1,
     tensorboard_log="C:/isaacsim/standalone_examples/custom_env/leader_follower_logs",
